@@ -15,16 +15,15 @@ def procesar():
     # 1. Obtener datos de API externa
     data = requests.get("https://jsonplaceholder.typicode.com/posts/1").json()
 
-    # 2. Obtener API KEY desde variables de entorno
+    # 2. Obtener API KEY desde variable de entorno
     api_key = os.getenv("GEMINI_API_KEY")
 
-    # Validación básica
     if not api_key:
         return {"error": "Falta configurar GEMINI_API_KEY"}
 
-    # 3. Llamada a Gemini (modelo actualizado)
+    # 3. Llamada a Gemini (modelo compatible)
     respuesta = requests.post(
-        f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key={api_key}",
+        f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.0-pro:generateContent?key={api_key}",
         json={
             "contents": [
                 {
@@ -38,11 +37,12 @@ def procesar():
         }
     ).json()
 
-    # 4. Extraer respuesta de la IA (seguro)
+    # 4. Extraer respuesta de IA
     try:
         analisis = respuesta["candidates"][0]["content"]["parts"][0]["text"]
-    except Exception as e:
-        analisis = f"Error IA: {str(respuesta)}"
+    except Exception:
+        # Si falla, mostramos respuesta completa para debug
+        analisis = f"Error IA: {respuesta}"
 
     # 5. Crear Excel
     resultado = [{
@@ -55,7 +55,7 @@ def procesar():
     archivo = "resultado.xlsx"
     df.to_excel(archivo, index=False)
 
-    # 6. Forzar descarga correcta
+    # 6. Devolver archivo (descarga automática)
     return FileResponse(
         archivo,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
