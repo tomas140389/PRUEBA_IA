@@ -16,7 +16,7 @@ def procesar():
     data = requests.get("https://jsonplaceholder.typicode.com/posts/1").json()
 
     # 2. Obtener API KEY desde variables de entorno
-    api_key = os.getenv("AIzaSyAUw8GOsWBp_BvDvohbPCAQFnNrMm3gZcs")
+    api_key = os.getenv("GEMINI_API_KEY")
 
     # Validación básica
     if not api_key:
