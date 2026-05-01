@@ -21,9 +21,10 @@ def procesar():
     if not api_key:
         return {"error": "Falta configurar GEMINI_API_KEY"}
 
-    # 3. Llamada a Gemini (modelo compatible)
+    # 3. Llamada a Gemini (modelo actualizado)
+    modelo = "gemini-2.0-flash"  # Puedes cambiarlo por otro modelo disponible
     respuesta = requests.post(
-        f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.0-pro:generateContent?key={api_key}",
+        f"https://generativelanguage.googleapis.com/v1beta/models/{modelo}:generateContent?key={api_key}",
         json={
             "contents": [
                 {
