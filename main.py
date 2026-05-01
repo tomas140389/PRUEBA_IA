@@ -1,22 +1,36 @@
+from fastapi import FastAPI
+import requests
+import pandas as pd
+from fastapi.responses import FileResponse
 import os
+
+app = FastAPI()
+
+@app.get("/")
+def home():
+    return {"status": "ok"}
 
 @app.get("/procesar")
 def procesar():
-    # 1. Obtener datos
+    # 1. Obtener datos de API externa
     data = requests.get("https://jsonplaceholder.typicode.com/posts/1").json()
 
-    # 2. Obtener API KEY
+    # 2. Obtener API KEY desde variables de entorno
     api_key = os.getenv("AIzaSyAfu2VBecRNuVdWcNJSYs9kEAKm2Iriplw")
 
-    # 3. Llamar a Gemini
+    # Validación básica
+    if not api_key:
+        return {"error": "Falta configurar GEMINI_API_KEY"}
+
+    # 3. Llamada a Gemini (modelo actualizado)
     respuesta = requests.post(
-        f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={api_key}",
+        f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}",
         json={
             "contents": [
                 {
                     "parts": [
                         {
-                            "text": f"Resume este texto en 2 líneas: {data['body']}"
+                            "text": f"Resume este texto en 2 líneas:\n{data['body']}"
                         }
                     ]
                 }
@@ -24,11 +38,11 @@ def procesar():
         }
     ).json()
 
-    # 4. Extraer texto de IA (más limpio)
+    # 4. Extraer respuesta de la IA (seguro)
     try:
         analisis = respuesta["candidates"][0]["content"]["parts"][0]["text"]
-    except:
-        analisis = "Error procesando IA"
+    except Exception as e:
+        analisis = f"Error IA: {str(respuesta)}"
 
     # 5. Crear Excel
     resultado = [{
@@ -41,6 +55,7 @@ def procesar():
     archivo = "resultado.xlsx"
     df.to_excel(archivo, index=False)
 
+    # 6. Forzar descarga correcta
     return FileResponse(
         archivo,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
